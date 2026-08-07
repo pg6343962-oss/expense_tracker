@@ -6,7 +6,7 @@ from django.db.models.functions import TruncMonth
 from transactions.models import Transaction
 
 
-
+@login_required
 def home(request):
 
     transactions = Transaction.objects.filter(
