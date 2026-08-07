@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+
+<div class="container mt-5">
+
+    <div class="card shadow p-4">
+
+        <h2 class="mb-4">My Profile</h2>
+
+        <table class="table">
+
+            <tr>
+                <th>Username</th>
+                <td>{{ request.user.username }}</td>
+            </tr>
+
+            <tr>
+                <th>First Name</th>
+                <td>{{ request.user.first_name }}</td>
+            </tr>
+
+            <tr>
+                <th>Email</th>
+                <td>{{ request.user.email }}</td>
+            </tr>
+
+        </table>
+
+    </div>
+    
+    <a href="{% url 'change_password' %}"
+   class="btn btn-warning">
+    Change Password
+</a>
+
+</div>
+
+{% endblock %}

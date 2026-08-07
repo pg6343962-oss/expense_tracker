@@ -1,0 +1,364 @@
+{% extends 'base.html' %}
+
+{% block title %}Transactions{% endblock %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">All Transactions</h2>
+
+        <a href="{% url 'add_transaction' %}" class="btn btn-success">
+            + Add Transaction
+        </a>
+    </div>
+
+
+    <!-- Search & Filters -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+
+            <div class="row g-3 align-items-end">
+
+                <!-- Search -->
+                <div class="col-md-5">
+                    <label class="form-label fw-semibold">
+                        Search
+                    </label>
+
+                    <form method="GET">
+                        <div class="input-group">
+
+                            <input
+                                type="text"
+                                class="form-control"
+                                name="search"
+                                placeholder="Search transaction..."
+                                value="{{ search|default:'' }}">
+
+                            <button
+                                type="submit"
+                                class="btn btn-success">
+                                Search
+                            </button>
+
+                        </div>
+                    </form>
+                </div>
+
+
+                <!-- Start Date -->
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">
+                        From
+                    </label>
+
+                    <input
+                        type="date"
+                        id="start_date"
+                        class="form-control"
+                        value="{{ start_date|default:'' }}">
+                </div>
+
+
+                <!-- End Date -->
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">
+                        To
+                    </label>
+
+                    <input
+                        type="date"
+                        id="end_date"
+                        class="form-control"
+                        value="{{ end_date|default:'' }}">
+                </div>
+
+
+                <!-- Filter -->
+                <div class="col-md-2">
+                    <button
+                        type="button"
+                        onclick="applyFilter()"
+                        class="btn btn-primary w-100">
+                        Filter
+                    </button>
+                </div>
+
+
+                <!-- Today -->
+                <div class="col-md-2">
+                    <button
+                        type="button"
+                        onclick="todayFilter()"
+                        class="btn btn-outline-secondary w-100">
+                        Today
+                    </button>
+                </div>
+
+
+                <!-- Export -->
+                <div class="col-md-2">
+                    <a
+                        href="{% url 'export_csv' %}"
+                        class="btn btn-warning w-100">
+                        Export
+                    </a>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- Summary Cards -->
+    <div class="row mb-4 g-3">
+
+        <!-- Income -->
+        <div class="col-md-4">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5>Total Income</h5>
+                    <h3>₹ {{ income }}</h3>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Expense -->
+        <div class="col-md-4">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <h5>Total Expense</h5>
+                    <h3>₹ {{ expense }}</h3>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Balance -->
+        <div class="col-md-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5>Balance</h5>
+                    <h3>₹ {{ balance }}</h3>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- Transactions Table -->
+    <div class="card shadow-sm">
+
+        <div class="card-body">
+
+            <div class="table-responsive">
+
+                <table class="table table-bordered table-hover align-middle mb-0">
+
+                    <thead class="table-dark">
+
+                        <tr>
+                            <th>Title</th>
+                            <th>Category</th>
+                            <th>Type</th>
+                            <th>Amount</th>
+                            <th>Date</th>
+                            <th width="180">Action</th>
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                    {% for transaction in page_obj %}
+
+                        <tr>
+
+                            <td>
+                                {{ transaction.title }}
+                            </td>
+
+                            <td>
+                                {{ transaction.category }}
+                            </td>
+
+                            <td>
+
+                                {% if transaction.transaction_type == 'Income' %}
+
+                                    <span class="badge bg-success">
+                                        Income
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="badge bg-danger">
+                                        Expense
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+                            <td>
+                                ₹ {{ transaction.amount }}
+                            </td>
+
+                            <td>
+                                {{ transaction.date }}
+                            </td>
+
+                            <td>
+
+                                <a
+                                    href="{% url 'edit_transaction' transaction.id %}"
+                                    class="btn btn-primary btn-sm">
+                                    Edit
+                                </a>
+
+                                <a
+                                    href="{% url 'delete_transaction' transaction.id %}"
+                                    class="btn btn-danger btn-sm"
+                                    onclick="return confirm('Are you sure?')">
+                                    Delete
+                                </a>
+
+                            </td>
+
+                        </tr>
+
+                    {% empty %}
+
+                        <tr>
+                            <td colspan="6" class="text-center py-4">
+                                No Transactions Found
+                            </td>
+                        </tr>
+
+                    {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Pagination -->
+    <nav class="mt-4">
+
+        <ul class="pagination justify-content-center">
+
+            {% if page_obj.has_previous %}
+
+                <li class="page-item">
+                    <a
+                        class="page-link"
+                        href="?page=1">
+                        First
+                    </a>
+                </li>
+
+                <li class="page-item">
+                    <a
+                        class="page-link"
+                        href="?page={{ page_obj.previous_page_number }}">
+                        Previous
+                    </a>
+                </li>
+
+            {% endif %}
+
+
+            <li class="page-item active">
+
+                <span class="page-link">
+                    {{ page_obj.number }}
+                </span>
+
+            </li>
+
+
+            {% if page_obj.has_next %}
+
+                <li class="page-item">
+
+                    <a
+                        class="page-link"
+                        href="?page={{ page_obj.next_page_number }}">
+                        Next
+                    </a>
+
+                </li>
+
+                <li class="page-item">
+
+                    <a
+                        class="page-link"
+                        href="?page={{ page_obj.paginator.num_pages }}">
+                        Last
+                    </a>
+
+                </li>
+
+            {% endif %}
+
+        </ul>
+
+    </nav>
+
+</div>
+
+
+<!-- Filter JavaScript -->
+<script>
+
+function applyFilter() {
+
+    let start = document.getElementById("start_date").value;
+    let end = document.getElementById("end_date").value;
+
+    let url = new URL(window.location.href);
+
+    url.searchParams.delete("page");
+
+    if (start) {
+        url.searchParams.set("start_date", start);
+    }
+
+    if (end) {
+        url.searchParams.set("end_date", end);
+    }
+
+    window.location.href = url.toString();
+}
+
+
+function todayFilter() {
+
+    let today = new Date().toISOString().split('T')[0];
+
+    let url = new URL(window.location.href);
+
+    url.searchParams.delete("page");
+
+    url.searchParams.set("start_date", today);
+    url.searchParams.set("end_date", today);
+
+    window.location.href = url.toString();
+}
+
+</script>
+
+{% endblock %}

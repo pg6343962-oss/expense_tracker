@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+
+<div class="p-5 mb-4 bg-light rounded-3 shadow">
+
+    <h1 class="display-5 fw-bold">
+        Welcome {{ request.user.first_name }}
+    </h1>
+
+    <p class="lead">
+        Track your income and expenses with ease.
+    </p>
+
+    <a href="{% url 'add_transaction' %}"
+       class="btn btn-success btn-lg">
+        + Add New Transaction
+    </a>
+
+</div>
+
+<div class="row">
+
+   <div class="row g-4 mb-4">
+
+    <div class="col-md-4">
+        <div class="card shadow border-0 bg-success text-white">
+            <div class="card-body">
+                <h6>Total Income</h6>
+                <h2>₹ {{ income }}</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow border-0 bg-danger text-white">
+            <div class="card-body">
+                <h6>Total Expense</h6>
+                <h2>₹ {{ expense }}</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow border-0 bg-primary text-white">
+            <div class="card-body">
+                <h6>Available Balance</h6>
+                <h2>₹ {{ balance }}</h2>
+            </div>
+        </div>
+    </div>
+
+</div>
+</div>
+
+<hr>
+
+<h3>Recent Transactions</h3>
+
+<table class="table table-bordered">
+
+    <tr>
+        <th>Title</th>
+        <th>Category</th>
+        <th>Type</th>
+        <th>Amount</th>
+    </tr>
+
+    {% for transaction in transactions %}
+
+    <tr>
+
+        <td>{{ transaction.title }}</td>
+        <td>{{ transaction.category }}</td>
+        <td>{{ transaction.transaction_type }}</td>
+        <td>₹ {{ transaction.amount }}</td>
+
+    </tr>
+
+    {% empty %}
+
+    <tr>
+        <td colspan="4">No Transactions Found</td>
+    </tr>
+
+    {% endfor %}
+
+</table>
+
+<hr>
+
+<h3 class="mb-4">Expense Analysis</h3>
+
+<div class="row">
+    <div class="col-md-6">
+        <canvas id="expenseChart"></canvas>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+const ctx = document.getElementById('expenseChart');
+
+new Chart(ctx, {
+    type: 'pie',
+    data: {
+        labels: ['Income', 'Expense'],
+        datasets: [{
+            data: [{{ chart_income }}, {{ chart_expense }}],
+            backgroundColor: [
+                '#198754',
+                '#dc3545'
+            ],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+</script>
+
+<hr>
+
+<h3 class="mt-5">Monthly Expense Analysis</h3>
+
+<div class="row">
+    <div class="col-md-8">
+        <canvas id="monthlyChart"></canvas>
+    </div>
+</div>
+<script>
+const monthlyCtx = document.getElementById('monthlyChart');
+
+new Chart(monthlyCtx, {
+    type: 'bar',
+    data: {
+        labels: {{ months|safe }},
+        datasets: [{
+            label: 'Monthly Expenses',
+            data: {{ amounts|safe }}
+        }]
+    },
+    options: {
+        responsive: true
+    }
+});
+</script>
+
+
+
+{% endblock %}
