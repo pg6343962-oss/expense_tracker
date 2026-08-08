@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Q, Sum
 from django.http import HttpResponse
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 import csv
 
@@ -9,7 +10,9 @@ from .models import Transaction
 from .forms import TransactionForm
 
 
+@login_required
 def add_transaction(request):
+
     if request.method == "POST":
         form = TransactionForm(request.POST)
 
@@ -35,6 +38,7 @@ def add_transaction(request):
     )
 
 
+@login_required
 def transaction_list(request):
 
     search = request.GET.get('search')
@@ -49,7 +53,7 @@ def transaction_list(request):
     if search:
         transactions = transactions.filter(
             Q(title__icontains=search) |
-            Q(category__icontains=search) |
+            Q(category__icontains=category) |
             Q(transaction_type__icontains=search)
         )
 
@@ -103,6 +107,7 @@ def transaction_list(request):
     )
 
 
+@login_required
 def edit_transaction(request, pk):
 
     transaction = get_object_or_404(
@@ -140,6 +145,7 @@ def edit_transaction(request, pk):
     )
 
 
+@login_required
 def delete_transaction(request, pk):
 
     transaction = get_object_or_404(
@@ -158,6 +164,7 @@ def delete_transaction(request, pk):
     return redirect('transaction_list')
 
 
+@login_required
 def export_csv(request):
 
     response = HttpResponse(
