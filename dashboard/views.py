@@ -9,46 +9,61 @@ from transactions.models import Transaction
 
 def home(request):
 
-    transactions = Transaction.objects.filter(
-        user=request.user
-    )
+    if request.user.is_authenticated:
 
-    income = transactions.filter(
-        transaction_type='Income'
-    ).aggregate(
-        total=Sum('amount')
-    )['total'] or 0
+        transactions = Transaction.objects.filter(
+            user=request.user
+        )
 
-    expense = transactions.filter(
-        transaction_type='Expense'
-    ).aggregate(
-        total=Sum('amount')
-    )['total'] or 0
+        income = transactions.filter(
+            transaction_type='Income'
+        ).aggregate(
+            total=Sum('amount')
+        )['total'] or 0
 
-    balance = income - expense
+        expense = transactions.filter(
+            transaction_type='Expense'
+        ).aggregate(
+            total=Sum('amount')
+        )['total'] or 0
 
-    # Monthly expense data
-    monthly_data = (
-        transactions
-        .filter(transaction_type='Expense')
-        .annotate(month=TruncMonth('date'))
-        .values('month')
-        .annotate(total=Sum('amount'))
-        .order_by('month')
-    )
+        balance = income - expense
 
-    months = []
-    amounts = []
+        # Monthly expense data
+        monthly_data = (
+            transactions
+            .filter(transaction_type='Expense')
+            .annotate(month=TruncMonth('date'))
+            .values('month')
+            .annotate(total=Sum('amount'))
+            .order_by('month')
+        )
 
-    for item in monthly_data:
-        months.append(item['month'].strftime('%b'))
-        amounts.append(float(item['total']))
+        months = []
+        amounts = []
+
+        for item in monthly_data:
+            months.append(item['month'].strftime('%b'))
+            amounts.append(float(item['total']))
+
+        recent_transactions = transactions.order_by('-date')[:5]
+
+    else:
+
+        income = 0
+        expense = 0
+        balance = 0
+
+        months = []
+        amounts = []
+
+        recent_transactions = []
 
     context = {
         'income': income,
         'expense': expense,
         'balance': balance,
-        'transactions': transactions.order_by('-date')[:5],
+        'transactions': recent_transactions,
 
         'chart_income': float(income),
         'chart_expense': float(expense),
